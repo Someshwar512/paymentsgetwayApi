@@ -1,14 +1,16 @@
 const express = require("express");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
-
+require("dotenv").config();
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// 🔹 GET KEYS FROM .env
+const KEY_ID = process.env.RAZORPAY_KEY_ID;
+const KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
 
-// 🔥 👉 PUT YOUR REAL TEST KEYS HERE
-const KEY_ID = "rzp_test_SaYN0hIKamdHwb";
-const KEY_SECRET = "FdKOCSV1cO7EkPaCL6yFMRqy";
+console.log("KEY_ID:", KEY_ID);
+console.log("KEY_SECRET:", KEY_SECRET);
 
 // 🔹 Razorpay Instance
 const razorpay = new Razorpay({
@@ -90,7 +92,7 @@ app.get("/", (req, res) => {
 app.post("/create-order", async (req, res) => {
   try {
     const order = await razorpay.orders.create({
-      amount: 50000, // ₹500
+      amount: 500000, // ₹500
       currency: "INR",
       receipt: "receipt_123",
     });
