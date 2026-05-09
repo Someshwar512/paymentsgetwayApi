@@ -9,8 +9,6 @@ app.use(express.urlencoded({ extended: true }));
 const KEY_ID = process.env.RAZORPAY_KEY_ID;
 const KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
 
-console.log("KEY_ID:", KEY_ID);
-console.log("KEY_SECRET:", KEY_SECRET);
 
 // 🔹 Razorpay Instance
 const razorpay = new Razorpay({
@@ -21,69 +19,265 @@ const razorpay = new Razorpay({
 // 🔹 FRONTEND + BUTTON
 app.get("/", (req, res) => {
   res.send(`
-  <html>
-    <head>
-      <title>Razorpay Payment</title>
-      <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    </head>
+  <!DOCTYPE html>
+  <html lang="en">
 
-    <body style="text-align:center; margin-top:100px;">
-      <h2>Razorpay Dummy Payment</h2>
-      <button id="payBtn" style="padding:10px 20px; font-size:18px;">
-        Pay ₹5000
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <title>Premium Payment</title>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+
+      *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+        font-family:'Poppins',sans-serif;
+      }
+
+      body{
+        height:100vh;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        background:linear-gradient(135deg,#0f172a,#1e293b,#0f172a);
+        overflow:hidden;
+      }
+
+      .bg-animation{
+        position:absolute;
+        width:600px;
+        height:600px;
+        background:#38bdf8;
+        filter:blur(150px);
+        opacity:.2;
+        border-radius:50%;
+        animation:move 8s infinite alternate;
+      }
+
+      @keyframes move{
+        from{
+          transform:translate(-150px,-100px);
+        }
+        to{
+          transform:translate(150px,100px);
+        }
+      }
+
+      .card{
+        position:relative;
+        width:380px;
+        padding:40px 30px;
+        border-radius:30px;
+        background:rgba(255,255,255,0.08);
+        backdrop-filter:blur(18px);
+        border:1px solid rgba(255,255,255,0.1);
+        box-shadow:0 20px 60px rgba(0,0,0,.4);
+        text-align:center;
+        color:white;
+        animation:fadeUp 1s ease;
+      }
+
+      @keyframes fadeUp{
+        from{
+          opacity:0;
+          transform:translateY(50px);
+        }
+        to{
+          opacity:1;
+          transform:translateY(0);
+        }
+      }
+
+      .logo{
+        width:80px;
+        height:80px;
+        border-radius:20px;
+        margin:auto;
+        margin-bottom:20px;
+        background:linear-gradient(135deg,#38bdf8,#0ea5e9);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:30px;
+        font-weight:700;
+      }
+
+      h1{
+        font-size:28px;
+        margin-bottom:10px;
+      }
+
+      p{
+        color:#cbd5e1;
+        font-size:15px;
+        margin-bottom:30px;
+      }
+
+      .price{
+        font-size:50px;
+        font-weight:700;
+        margin-bottom:30px;
+        color:#38bdf8;
+      }
+
+      .features{
+        text-align:left;
+        margin-bottom:35px;
+      }
+
+      .features div{
+        margin:12px 0;
+        color:#e2e8f0;
+        font-size:15px;
+      }
+
+      button{
+        width:100%;
+        padding:16px;
+        border:none;
+        border-radius:14px;
+        background:linear-gradient(135deg,#38bdf8,#0ea5e9);
+        color:white;
+        font-size:18px;
+        font-weight:600;
+        cursor:pointer;
+        transition:.3s;
+      }
+
+      button:hover{
+        transform:translateY(-3px) scale(1.02);
+        box-shadow:0 10px 25px rgba(56,189,248,.4);
+      }
+
+      .secure{
+        margin-top:18px;
+        font-size:13px;
+        color:#94a3b8;
+      }
+
+    </style>
+  </head>
+
+  <body>
+
+    <div class="bg-animation"></div>
+
+    <div class="card">
+
+      <div class="logo">M</div>
+
+      <h1>Premium Plan</h1>
+
+      <p>Secure payment powered by Razorpay</p>
+
+      <div class="price">₹5000</div>
+
+      <div class="features">
+        <div>✔ Full Stack Website</div>
+        <div>✔ Payment Gateway Integration</div>
+        <div>✔ Admin Dashboard</div>
+        <div>✔ Mobile Responsive</div>
+        <div>✔ Premium UI Design</div>
+      </div>
+
+      <button id="payBtn">
+        Pay Securely
       </button>
 
-      <script>
-        document.getElementById("payBtn").onclick = async function () {
+      <div class="secure">
+        🔒 100% Secure Payment
+      </div>
 
-          console.log("Button Clicked ✅");
+    </div>
 
-          // 🔹 Create Order
-          const res = await fetch("/create-order", { method: "POST" });
+    <script>
+
+      document.getElementById("payBtn").onclick = async function () {
+
+        const btn = document.getElementById("payBtn");
+
+        btn.innerHTML = "Processing...";
+        btn.disabled = true;
+
+        try {
+
+          const res = await fetch("/create-order", {
+            method: "POST"
+          });
+
           const data = await res.json();
 
-          console.log("Order:", data);
-
           const options = {
-            key: "${KEY_ID}", // 🔥 KEY HERE
+
+            key: "${KEY_ID}",
+
             amount: data.order.amount,
+
             currency: "INR",
+
             name: "My Project",
-            description: "Test Payment",
+
+            description: "Premium Plan Payment",
+
             order_id: data.order.id,
 
-            handler: async function (response) {
+            handler: async function(response){
 
-              console.log("Payment Response:", response);
-
-              // 🔹 Verify Payment
-              const verifyRes = await fetch("/verify-payment", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json"
+              const verifyRes = await fetch("/verify-payment",{
+                method:"POST",
+                headers:{
+                  "Content-Type":"application/json"
                 },
-                body: JSON.stringify(response)
+                body:JSON.stringify(response)
               });
 
               const verifyData = await verifyRes.json();
 
-              if (verifyData.success) {
-                alert("✅ Payment Successful & Verified");
-              } else {
+              if(verifyData.success){
+
+                alert("✅ Payment Successful");
+
+              }else{
+
                 alert("❌ Payment Verification Failed");
               }
             },
 
-            theme: {
-              color: "#3399cc"
+            theme:{
+              color:"#0ea5e9"
             }
+
           };
 
-          const rzp = new Razorpay(options);
+          const rzp = new window.Razorpay(options);
+
           rzp.open();
-        };
-      </script>
-    </body>
+
+          btn.innerHTML = "Pay Securely";
+          btn.disabled = false;
+
+        } catch(err){
+
+          console.log(err);
+
+          alert("Something went wrong");
+
+          btn.innerHTML = "Pay Securely";
+          btn.disabled = false;
+        }
+
+      }
+
+    </script>
+
+  </body>
   </html>
   `);
 });
