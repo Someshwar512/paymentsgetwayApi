@@ -242,7 +242,7 @@ app.get("/", (req, res) => {
 
               if(verifyData.success){
 
-                alert("✅ Payment Successful");
+                alert("✅ Payment Successful Done");
 
               }else{
 
